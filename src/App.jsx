@@ -14,6 +14,7 @@ import CategoryRecipesPage from './pages/CategoryRecipesPage';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrderHistoryPage from './pages/OrderHistoryPage';
+import SearchResultsPage from './pages/SearchResultsPage';
 
 // Admin
 import AdminLayout from './components/admin/AdminLayout';
@@ -48,6 +49,7 @@ function AppContent() {
           <Route path="/cart" element={isAuthenticated ? <CartPage /> : <Navigate to="/login" />} />
           <Route path="/checkout" element={isAuthenticated ? <CheckoutPage /> : <Navigate to="/login" />} />
           <Route path="/order-history" element={isAuthenticated ? <OrderHistoryPage /> : <Navigate to="/login" />} />
+          <Route path="/search" element={isAuthenticated ? <SearchResultsPage /> : <Navigate to="/login" />} />
 
           {/* Admin Routes */}
           <Route path="/admin/dashboard" element={<AdminLayout><Dashboard /></AdminLayout>} />

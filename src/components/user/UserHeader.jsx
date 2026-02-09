@@ -1,8 +1,8 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { ShoppingCart, User, LogOut, Search, UtensilsCrossed, Menu } from 'lucide-react';
 import { logout } from '../../redux/slices/authSlice';
-import { useNavigate } from 'react-router-dom';
+import { searchRecipes, clearSearch } from '../../redux/slices/recipesSlice';
 import { useState } from 'react';
 
 export default function UserHeader() {
@@ -11,10 +11,26 @@ export default function UserHeader() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleLogout = () => {
     dispatch(logout());
     navigate('/login');
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      dispatch(searchRecipes(searchQuery));
+      navigate('/search');
+    }
+  };
+
+  const handleSearchChange = (value) => {
+    setSearchQuery(value);
+    if (!value.trim()) {
+      dispatch(clearSearch());
+    }
   };
 
   return (
@@ -33,14 +49,16 @@ export default function UserHeader() {
 
           {/* Search - Hidden on mobile */}
           <div className="hidden md:flex flex-1 max-w-md">
-            <div className="relative w-full">
+            <form onSubmit={handleSearch} className="relative w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
               <input
                 type="text"
                 placeholder="Search food..."
+                value={searchQuery}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
-            </div>
+            </form>
           </div>
 
           {/* Desktop Actions */}
@@ -83,14 +101,16 @@ export default function UserHeader() {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden mt-4 pb-4 space-y-3 border-t pt-4">
-            <div className="relative">
+            <form onSubmit={handleSearch} className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
               <input
                 type="text"
                 placeholder="Search food..."
+                value={searchQuery}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
-            </div>
+            </form>
             <Link to="/cart" className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <span className="font-medium">Cart</span>
               <div className="flex items-center gap-2">

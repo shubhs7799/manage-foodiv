@@ -34,11 +34,22 @@ const recipesSlice = createSlice({
   initialState: {
     items: [],
     loading: false,
-    error: null
+    error: null,
+    searchResults: []
   },
   reducers: {
     clearError: (state) => {
       state.error = null;
+    },
+    searchRecipes: (state, action) => {
+      const query = action.payload.toLowerCase();
+      state.searchResults = state.items.filter(recipe => 
+        recipe.name.toLowerCase().includes(query) ||
+        recipe.ingredients?.some(ing => ing.toLowerCase().includes(query))
+      );
+    },
+    clearSearch: (state) => {
+      state.searchResults = [];
     }
   },
   extraReducers: (builder) => {
@@ -70,5 +81,5 @@ const recipesSlice = createSlice({
   }
 });
 
-export const { clearError } = recipesSlice.actions;
+export const { clearError, searchRecipes, clearSearch } = recipesSlice.actions;
 export default recipesSlice.reducer;
