@@ -13,7 +13,7 @@ const seedAdmin = async () => {
       console.log('Admin user already exists');
     } else {
       await User.create({
-        name: 'Admin',
+        name: 'Admin Foodiv',
         email: 'admin@foodiv.com',
         password: 'admin@123',
         role: 'admin'
