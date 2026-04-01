@@ -1,57 +1,38 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { firestoreAPI } from '../../services/firestoreService';
+import { api } from '../../services/api';
 
 export const fetchCategories = createAsyncThunk('categories/fetchAll', async () => {
-  return await firestoreAPI.getCollection('categories');
+  return await api.get('/categories');
 });
 
 export const addCategory = createAsyncThunk('categories/add', async ({ name, imageUrl }) => {
-  const categoryId = Date.now().toString();
-  const categoryData = { name, imageUrl: imageUrl || '', createdAt: new Date().toISOString() };
-  return await firestoreAPI.createDocument('categories', categoryData, categoryId);
+  return await api.post('/categories', { name, imageUrl });
 });
 
 export const updateCategory = createAsyncThunk('categories/update', async ({ id, name, imageUrl }) => {
-  const data = { name, imageUrl: imageUrl || '', createdAt: new Date().toISOString() };
-  return await firestoreAPI.updateDocument('categories', id, data);
+  return await api.put(`/categories/${id}`, { name, imageUrl });
 });
 
 export const deleteCategory = createAsyncThunk('categories/delete', async (id) => {
-  await firestoreAPI.deleteDocument('categories', id);
+  await api.delete(`/categories/${id}`);
   return id;
 });
 
 const categoriesSlice = createSlice({
   name: 'categories',
-  initialState: {
-    items: [],
-    loading: false,
-    error: null
-  },
+  initialState: { items: [], loading: false, error: null },
   reducers: {
-    clearError: (state) => {
-      state.error = null;
-    }
+    clearError: (state) => { state.error = null; }
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchCategories.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(fetchCategories.fulfilled, (state, action) => {
-        state.loading = false;
-        state.items = action.payload;
-      })
-      .addCase(fetchCategories.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message;
-      })
-      .addCase(addCategory.fulfilled, (state, action) => {
-        state.items.push(action.payload);
-      })
+      .addCase(fetchCategories.pending, (state) => { state.loading = true; })
+      .addCase(fetchCategories.fulfilled, (state, action) => { state.loading = false; state.items = action.payload; })
+      .addCase(fetchCategories.rejected, (state, action) => { state.loading = false; state.error = action.error.message; })
+      .addCase(addCategory.fulfilled, (state, action) => { state.items.push(action.payload); })
       .addCase(updateCategory.fulfilled, (state, action) => {
-        const index = state.items.findIndex(item => item.id === action.payload.id);
-        if (index !== -1) state.items[index] = action.payload;
+        const i = state.items.findIndex(item => item.id === action.payload.id);
+        if (i !== -1) state.items[i] = action.payload;
       })
       .addCase(deleteCategory.fulfilled, (state, action) => {
         state.items = state.items.filter(item => item.id !== action.payload);

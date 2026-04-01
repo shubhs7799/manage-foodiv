@@ -6,9 +6,15 @@ import { useDispatch, useSelector } from 'react-redux';
 import { checkAuth } from './redux/slices/authSlice';
 import { Toaster } from 'react-hot-toast';
 
-// Pages
+// Layouts
+import UserLayout from './components/user/UserLayout';
+import AdminLayout from './components/admin/AdminLayout';
+
+// Auth Pages
 import LoginPage from './pages/LoginPage';
 import SignUpPage from './pages/SignUpPage';
+
+// User Pages
 import HomePage from './pages/HomePage';
 import CategoryRecipesPage from './pages/CategoryRecipesPage';
 import CartPage from './pages/CartPage';
@@ -16,54 +22,70 @@ import CheckoutPage from './pages/CheckoutPage';
 import OrderHistoryPage from './pages/OrderHistoryPage';
 import SearchResultsPage from './pages/SearchResultsPage';
 
-// Admin
-import AdminLayout from './components/admin/AdminLayout';
+// Admin Pages
 import Dashboard from './components/admin/Dashboard';
 import CategoryManager from './components/admin/CategoryManager';
 import RecipeManager from './components/admin/RecipeManager';
 import OrdersManager from './components/admin/OrdersManager';
 
+// Common
+import NotFoundPage from './pages/NotFoundPage';
+import Loader from './components/common/Loader';
+
 function AppContent() {
   const dispatch = useDispatch();
-  const { isAuthenticated, user } = useSelector(state => state.auth);
+  const { isAuthenticated, user, loading } = useSelector(state => state.auth);
 
   useEffect(() => {
     dispatch(checkAuth());
   }, [dispatch]);
 
+  // Show loader while checking auth on first load
+  if (loading && !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader text="Starting up..." />
+      </div>
+    );
+  }
+
+  const getDefaultRoute = () => {
+    if (!isAuthenticated) return '/signup';
+    return user?.role === 'admin' ? '/admin/dashboard' : '/home';
+  };
+
   return (
-    <>
+    <BrowserRouter>
       <Toaster position="top-right" />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={
-            isAuthenticated ? <Navigate to={user?.role === 'admin' ? '/admin/dashboard' : '/home'} /> : <LoginPage />
-          } />
-          <Route path="/signup" element={
-            isAuthenticated ? <Navigate to="/home" /> : <SignUpPage />
-          } />
+      <Routes>
+        {/* Auth Routes */}
+        <Route path="/login" element={isAuthenticated ? <Navigate to={getDefaultRoute()} /> : <LoginPage />} />
+        <Route path="/signup" element={isAuthenticated ? <Navigate to="/home" /> : <SignUpPage />} />
 
-          {/* User Routes */}
-          <Route path="/home" element={isAuthenticated ? <HomePage /> : <Navigate to="/login" />} />
-          <Route path="/category/:id" element={isAuthenticated ? <CategoryRecipesPage /> : <Navigate to="/login" />} />
-          <Route path="/cart" element={isAuthenticated ? <CartPage /> : <Navigate to="/login" />} />
-          <Route path="/checkout" element={isAuthenticated ? <CheckoutPage /> : <Navigate to="/login" />} />
-          <Route path="/order-history" element={isAuthenticated ? <OrderHistoryPage /> : <Navigate to="/login" />} />
-          <Route path="/search" element={isAuthenticated ? <SearchResultsPage /> : <Navigate to="/login" />} />
+        {/* User Routes - wrapped in UserLayout */}
+        <Route element={<UserLayout />}>
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/category/:id" element={<CategoryRecipesPage />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/order-history" element={<OrderHistoryPage />} />
+          <Route path="/search" element={<SearchResultsPage />} />
+        </Route>
 
-          {/* Admin Routes */}
-          <Route path="/admin/dashboard" element={<AdminLayout><Dashboard /></AdminLayout>} />
-          <Route path="/admin/categories" element={<AdminLayout><CategoryManager /></AdminLayout>} />
-          <Route path="/admin/recipes" element={<AdminLayout><RecipeManager /></AdminLayout>} />
-          <Route path="/admin/orders" element={<AdminLayout><OrdersManager /></AdminLayout>} />
-          <Route path="/admin" element={<Navigate to="/admin/dashboard" />} />
+        {/* Admin Routes - wrapped in AdminLayout */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<Navigate to="dashboard" />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="categories" element={<CategoryManager />} />
+          <Route path="recipes" element={<RecipeManager />} />
+          <Route path="orders" element={<OrdersManager />} />
+        </Route>
 
-          {/* Default */}
-          <Route path="/" element={<Navigate to={isAuthenticated ? (user?.role === 'admin' ? '/admin/dashboard' : '/home') : '/signup'} />} />
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-      </BrowserRouter>
-    </>
+        {/* Redirects */}
+        <Route path="/" element={<Navigate to={getDefaultRoute()} />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
