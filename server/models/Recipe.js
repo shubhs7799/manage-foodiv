@@ -8,4 +8,6 @@ const recipeSchema = new mongoose.Schema({
   imageUrl: { type: String, default: '' }
 }, { timestamps: true });
 
+recipeSchema.index({ categoryId: 1 });
+
 export default mongoose.model('Recipe', recipeSchema);

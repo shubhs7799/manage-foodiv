@@ -1,8 +1,11 @@
 import { Router } from 'express';
 import Order from '../models/Order.js';
+import Recipe from '../models/Recipe.js';
 import { auth, adminOnly } from '../middleware/auth.js';
 
 const router = Router();
+
+const DELIVERY_FEE = 40;
 
 // GET /api/orders - admin gets all, user gets own
 router.get('/', auth, async (req, res) => {
@@ -18,15 +21,38 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-// POST /api/orders
+// POST /api/orders - validate prices server-side
 router.post('/', auth, async (req, res) => {
   try {
-    const { items, totalAmount, deliveryAddress } = req.body;
+    const { items, deliveryAddress } = req.body;
     if (!items?.length) return res.status(400).json({ message: 'Order must have items' });
+
+    const recipeIds = items.map(i => i.recipeId);
+    const recipes = await Recipe.find({ _id: { $in: recipeIds } });
+    const priceMap = Object.fromEntries(recipes.map(r => [r._id.toString(), r.price]));
+
+    // Validate all items exist and compute real total
+    for (const item of items) {
+      if (!priceMap[item.recipeId]) {
+        return res.status(400).json({ message: `Recipe ${item.recipeId} not found` });
+      }
+      if (!item.quantity || item.quantity < 1) {
+        return res.status(400).json({ message: 'Invalid quantity' });
+      }
+    }
+
+    const serverItems = items.map(i => ({
+      recipeId: i.recipeId,
+      name: i.name,
+      price: priceMap[i.recipeId],
+      quantity: i.quantity
+    }));
+    const subtotal = serverItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
+    const totalAmount = subtotal + DELIVERY_FEE;
 
     const order = await Order.create({
       userId: req.user._id,
-      items,
+      items: serverItems,
       totalAmount,
       deliveryAddress
     });

@@ -28,4 +28,6 @@ const orderSchema = new mongoose.Schema({
   orderDate: { type: Date, default: Date.now }
 }, { timestamps: true });
 
+orderSchema.index({ userId: 1, orderDate: -1 });
+
 export default mongoose.model('Order', orderSchema);

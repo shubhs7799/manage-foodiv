@@ -12,14 +12,21 @@ const seedAll = async () => {
     console.log('MongoDB connected');
 
     // Seed Admin
-    const existing = await User.findOne({ email: 'admin@foodiv.com' });
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@foodiv.com';
+    const adminPassword = process.env.ADMIN_PASSWORD;
+    if (!adminPassword) {
+      console.error('Set ADMIN_PASSWORD env var before seeding');
+      process.exit(1);
+    }
+
+    const existing = await User.findOne({ email: adminEmail });
     if (existing) {
       console.log('Admin user already exists');
     } else {
       await User.create({
         name: 'Admin Foodiv',
-        email: 'admin@foodiv.com',
-        password: 'admin@123',
+        email: adminEmail,
+        password: adminPassword,
         role: 'admin'
       });
       console.log('Admin user created');
