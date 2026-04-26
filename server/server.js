@@ -7,6 +7,7 @@ import authRoutes from './routes/auth.js';
 import categoryRoutes from './routes/categories.js';
 import recipeRoutes from './routes/recipes.js';
 import orderRoutes from './routes/orders.js';
+import recommendationRoutes from './routes/recommendations.js';
 
 dotenv.config();
 
@@ -31,6 +32,7 @@ app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/recipes', recipeRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/recommendations', recommendationRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
