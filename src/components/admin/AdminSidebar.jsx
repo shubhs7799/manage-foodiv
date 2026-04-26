@@ -1,13 +1,15 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Tag, Book, ClipboardList, LogOut, ChefHat } from 'lucide-react';
+import { Home, Tag, Book, ClipboardList, LogOut, ChefHat, Menu, X } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { logout } from '../../redux/slices/authSlice';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 export default function AdminSidebar() {
   const location = useLocation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
 
   const navItems = [
     { path: '/admin/dashboard', icon: Home, label: 'Dashboard' },
@@ -21,10 +23,10 @@ export default function AdminSidebar() {
     navigate('/login');
   };
 
-  return (
-    <div className="w-64 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white min-h-screen flex flex-col shadow-2xl">
+  const sidebar = (
+    <>
       <div className="p-6 border-b border-slate-700">
-        <div className="flex items-center gap-3 mb-2">
+        <div className="flex items-center gap-3">
           <div className="bg-gradient-to-r from-orange-500 to-pink-500 p-2 rounded-lg">
             <ChefHat size={24} />
           </div>
@@ -32,6 +34,9 @@ export default function AdminSidebar() {
             <h1 className="text-xl font-bold">FoodHub</h1>
             <p className="text-slate-400 text-xs">Admin Panel</p>
           </div>
+          <button onClick={() => setOpen(false)} className="ml-auto lg:hidden" aria-label="Close menu">
+            <X size={20} />
+          </button>
         </div>
       </div>
 
@@ -40,9 +45,10 @@ export default function AdminSidebar() {
           <Link
             key={path}
             to={path}
+            onClick={() => setOpen(false)}
             className={`flex items-center gap-3 px-6 py-3 mx-2 rounded-lg transition-all ${
-              location.pathname === path 
-                ? 'bg-gradient-to-r from-orange-500 to-pink-500 shadow-lg' 
+              location.pathname === path
+                ? 'bg-gradient-to-r from-orange-500 to-pink-500 shadow-lg'
                 : 'hover:bg-slate-800'
             }`}
           >
@@ -61,6 +67,35 @@ export default function AdminSidebar() {
           <span>Logout</span>
         </button>
       </div>
-    </div>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile toggle */}
+      <button
+        onClick={() => setOpen(true)}
+        className="lg:hidden fixed top-4 left-4 z-50 bg-slate-800 text-white p-2 rounded-lg shadow-lg"
+        aria-label="Open admin menu"
+      >
+        <Menu size={20} />
+      </button>
+
+      {/* Mobile overlay */}
+      {open && (
+        <div className="lg:hidden fixed inset-0 bg-black/50 z-40" onClick={() => setOpen(false)} />
+      )}
+
+      {/* Sidebar - hidden on mobile unless open */}
+      <div className={`
+        fixed lg:static inset-y-0 left-0 z-50 w-64
+        bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white
+        min-h-screen flex flex-col shadow-2xl
+        transition-transform lg:translate-x-0
+        ${open ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        {sidebar}
+      </div>
+    </>
   );
 }

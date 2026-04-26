@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCategories, addCategory, updateCategory, deleteCategory } from '../../redux/slices/categoriesSlice';
 import toast from 'react-hot-toast';
+import { Pencil, Trash2 } from 'lucide-react';
 
 export default function CategoryManager() {
   const dispatch = useDispatch();
@@ -33,7 +34,7 @@ export default function CategoryManager() {
       }
       resetForm();
     } catch (err) {
-      toast.error('Operation failed');
+      toast.error(err?.message || 'Operation failed');
     }
   };
 
@@ -55,7 +56,7 @@ export default function CategoryManager() {
         await dispatch(deleteCategory(id)).unwrap();
         toast.success('Category deleted!');
       } catch (err) {
-        toast.error('Delete failed');
+        toast.error(err?.message || 'Delete failed');
       }
     }
   };
@@ -86,15 +87,17 @@ export default function CategoryManager() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleEdit(category)}
-                    className="text-indigo-600 hover:underline"
+                    aria-label={`Edit ${category.name}`}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition font-medium text-sm"
                   >
-                    Edit
+                    <Pencil size={14} /> Edit
                   </button>
                   <button
                     onClick={() => handleDelete(category.id)}
-                    className="text-red-600 hover:underline"
+                    aria-label={`Delete ${category.name}`}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition font-medium text-sm"
                   >
-                    Delete
+                    <Trash2 size={14} /> Delete
                   </button>
                 </div>
               </div>

@@ -5,7 +5,6 @@ export const fetchOrders = createAsyncThunk('orders/fetchAll', async () => {
   return await api.get('/orders');
 });
 
-// fetchUserOrders now uses same endpoint - backend filters by user role
 export const fetchUserOrders = createAsyncThunk('orders/fetchUser', async () => {
   return await api.get('/orders');
 });
@@ -26,11 +25,15 @@ const ordersSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchOrders.pending, (state) => { state.loading = true; })
+      .addCase(fetchOrders.pending, (state) => { state.loading = true; state.error = null; })
       .addCase(fetchOrders.fulfilled, (state, action) => { state.loading = false; state.items = action.payload; })
       .addCase(fetchOrders.rejected, (state, action) => { state.loading = false; state.error = action.error.message; })
-      .addCase(fetchUserOrders.fulfilled, (state, action) => { state.items = action.payload; })
-      .addCase(createOrder.fulfilled, (state, action) => { state.items.push(action.payload); })
+      .addCase(fetchUserOrders.pending, (state) => { state.loading = true; state.error = null; })
+      .addCase(fetchUserOrders.fulfilled, (state, action) => { state.loading = false; state.items = action.payload; })
+      .addCase(fetchUserOrders.rejected, (state, action) => { state.loading = false; state.error = action.error.message; })
+      .addCase(createOrder.pending, (state) => { state.loading = true; state.error = null; })
+      .addCase(createOrder.fulfilled, (state, action) => { state.loading = false; state.items.push(action.payload); })
+      .addCase(createOrder.rejected, (state, action) => { state.loading = false; state.error = action.error.message; })
       .addCase(updateOrderStatus.fulfilled, (state, action) => {
         const i = state.items.findIndex(item => item.id === action.payload.id);
         if (i !== -1) state.items[i] = action.payload;

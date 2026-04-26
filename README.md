@@ -1,138 +1,124 @@
 # FooDiv - Restaurant Delivery App
 
-A modern restaurant delivery application built with React, Redux Toolkit, Tailwind CSS, and Firebase REST API.
+A restaurant delivery application built with React, Redux Toolkit, Tailwind CSS, Express, and MongoDB.
 
 ## Features
 
-### Admin Panel
-- **Category Management**: Create, update, and delete food categories
-- **Recipe Management**: Add, edit, and remove recipes with details like price, prep time, ingredients, and images
-- **Authentication**: Secure admin login system
-
 ### User Interface
-- **Browse Menu**: View all recipes with category filtering
-- **Shopping Cart**: Add items, adjust quantities, and place orders
-- **Responsive Design**: Works seamlessly on desktop and mobile devices
+- Browse food categories and recipes
+- Search recipes by name or ingredients
+- Shopping cart with localStorage persistence
+- Checkout with delivery address
+- Order history with status tracking
+
+### Admin Panel
+- Dashboard with stats overview
+- Category management (CRUD)
+- Recipe management (CRUD)
+- Order status management
+- Responsive sidebar
 
 ## Tech Stack
 
 - **Frontend**: React 19 + Vite
 - **State Management**: Redux Toolkit
 - **Styling**: Tailwind CSS 4
-- **Routing**: React Router DOM
-- **Backend**: Firebase (using REST API, not SDK)
+- **Routing**: React Router DOM 7
+- **Icons**: Lucide React
+- **Backend**: Express.js + MongoDB (Mongoose)
+- **Auth**: JWT + bcryptjs
 
-## Setup Instructions
+## Setup
 
-### 1. Firebase Configuration
+### 1. Clone and install
 
-1. Go to [Firebase Console](https://console.firebase.google.com/)
-2. Create a new project or use an existing one
-3. Enable **Authentication** with Email/Password provider
-4. Enable **Firestore Database** in test mode (or production mode with proper rules)
-5. Get your Firebase config from Project Settings
-
-### 2. Update Firebase Config
-
-Edit `src/config/firebase.js` and replace with your Firebase credentials:
-
-\`\`\`javascript
-export const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  databaseURL: "YOUR_DATABASE_URL"
-};
-\`\`\`
-
-### 3. Install Dependencies
-
-\`\`\`bash
+```bash
+# Frontend
 npm install
-\`\`\`
 
-### 4. Run Development Server
+# Backend
+cd server
+npm install
+```
 
-\`\`\`bash
+### 2. Configure environment
+
+Create `server/.env`:
+
+```
+PORT=5001
+MONGO_URI=mongodb://localhost:27017/foodiv
+JWT_SECRET=your_random_secret_here
+CORS_ORIGIN=http://localhost:5173
+```
+
+Create `.env` in root:
+
+```
+VITE_API_URL=http://localhost:5001/api
+```
+
+### 3. Seed data (optional)
+
+```bash
+cd server
+ADMIN_PASSWORD=your_secure_password node seed.js
+```
+
+### 4. Run
+
+```bash
+# Terminal 1 - Backend
+cd server
 npm run dev
-\`\`\`
 
-The app will be available at `http://localhost:5173`
+# Terminal 2 - Frontend
+npm run dev
+```
 
-## Usage
-
-### Admin Panel
-
-1. Navigate to `/admin/login`
-2. Sign up for a new admin account or login
-3. Manage categories at `/admin/categories`
-4. Manage recipes at `/admin/recipes`
-
-### User Interface
-
-1. Navigate to `/` (home page)
-2. Browse recipes by category
-3. Add items to cart
-4. View cart at `/cart`
-5. Place orders
+Frontend: http://localhost:5173
+Backend: http://localhost:5001
 
 ## Project Structure
 
-\`\`\`
+```
 src/
 ├── components/
-│   ├── admin/          # Admin-specific components
-│   ├── user/           # User-facing components
-│   └── common/         # Shared components
-├── pages/
-│   ├── admin/          # Admin pages
-│   └── user/           # User pages
-├── redux/
-│   ├── slices/         # Redux slices
-│   └── store.js        # Redux store configuration
-├── services/           # API services
-├── config/             # Configuration files
-└── App.jsx             # Main app component
-\`\`\`
+│   ├── admin/       # AdminSidebar, Dashboard, CategoryManager, RecipeManager, OrdersManager
+│   ├── user/        # UserHeader, UserLayout
+│   └── common/      # RecipeCard, EmptyState, Loader
+├── pages/           # HomePage, CartPage, CheckoutPage, SearchResultsPage, etc.
+├── redux/slices/    # authSlice, cartSlice, recipesSlice, ordersSlice, categoriesSlice
+├── services/        # api.js (fetch wrapper)
+└── App.jsx
 
-## Firebase REST API
+server/
+├── config/          # db.js
+├── middleware/       # auth.js (JWT + role check)
+├── models/          # User, Category, Recipe, Order
+├── routes/          # auth, categories, recipes, orders
+├── seed.js          # Database seeder
+└── server.js
+```
 
-This project uses Firebase REST API instead of the Firebase SDK:
+## API Endpoints
 
-- **Authentication**: `https://identitytoolkit.googleapis.com/v1/accounts`
-- **Firestore**: `https://firestore.googleapis.com/v1/projects/{projectId}/databases/(default)/documents`
-
-### Collections Structure
-
-**categories**
-\`\`\`json
-{
-  "name": "string",
-  "description": "string"
-}
-\`\`\`
-
-**recipes**
-\`\`\`json
-{
-  "name": "string",
-  "description": "string",
-  "price": "number",
-  "categoryId": "string",
-  "imageUrl": "string",
-  "ingredients": "string",
-  "prepTime": "number"
-}
-\`\`\`
-
-## Build for Production
-
-\`\`\`bash
-npm run build
-\`\`\`
-
-The production-ready files will be in the `dist` folder.
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | /api/auth/signup | No | Register |
+| POST | /api/auth/login | No | Login |
+| GET | /api/auth/me | Yes | Current user |
+| GET | /api/categories | No | List categories |
+| POST | /api/categories | Admin | Create category |
+| PUT | /api/categories/:id | Admin | Update category |
+| DELETE | /api/categories/:id | Admin | Delete category |
+| GET | /api/recipes | No | List recipes (optional ?categoryId=) |
+| POST | /api/recipes | Admin | Create recipe |
+| PUT | /api/recipes/:id | Admin | Update recipe |
+| DELETE | /api/recipes/:id | Admin | Delete recipe |
+| GET | /api/orders | Yes | List orders (filtered by role) |
+| POST | /api/orders | Yes | Create order (server validates prices) |
+| PATCH | /api/orders/:id/status | Admin | Update order status |
 
 ## License
 

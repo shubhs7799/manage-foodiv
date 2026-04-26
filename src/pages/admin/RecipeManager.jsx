@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchRecipes, addRecipe, updateRecipe, deleteRecipe } from '../../redux/slices/recipesSlice';
 import { fetchCategories } from '../../redux/slices/categoriesSlice';
 import toast from 'react-hot-toast';
-import { Plus } from 'lucide-react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 
 export default function RecipeManager() {
   const dispatch = useDispatch();
@@ -57,7 +57,7 @@ export default function RecipeManager() {
       }
       resetForm();
     } catch (err) {
-      toast.error('Operation failed');
+      toast.error(err?.message || 'Operation failed');
     }
   };
 
@@ -86,7 +86,7 @@ export default function RecipeManager() {
         await dispatch(deleteRecipe(id)).unwrap();
         toast.success('Recipe deleted!');
       } catch (err) {
-        toast.error('Delete failed');
+        toast.error(err?.message || 'Delete failed');
       }
     }
   };
@@ -135,15 +135,17 @@ export default function RecipeManager() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleEdit(recipe)}
-                    className="text-indigo-600 hover:underline"
+                    aria-label={`Edit ${recipe.name}`}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition font-medium text-sm"
                   >
-                    Edit
+                    <Pencil size={14} /> Edit
                   </button>
                   <button
                     onClick={() => handleDelete(recipe.id)}
-                    className="text-red-600 hover:underline"
+                    aria-label={`Delete ${recipe.name}`}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition font-medium text-sm"
                   >
-                    Delete
+                    <Trash2 size={14} /> Delete
                   </button>
                 </div>
               </div>

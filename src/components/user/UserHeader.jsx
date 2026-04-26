@@ -1,26 +1,36 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { ShoppingCart, User, LogOut, Search, UtensilsCrossed, Menu } from 'lucide-react';
+import { ShoppingCart, User, LogOut, Search, UtensilsCrossed, Menu, Mic, MicOff } from 'lucide-react';
 import { logout } from '../../redux/slices/authSlice';
-import { searchRecipes, clearSearch } from '../../redux/slices/recipesSlice';
+import { searchRecipes, clearSearch, fetchRecipes } from '../../redux/slices/recipesSlice';
 import { useState } from 'react';
+import useVoiceSearch from '../../hooks/useVoiceSearch';
 
 export default function UserHeader() {
-  const { items } = useSelector(state => state.cart);
+  const { items: cartItems } = useSelector(state => state.cart);
   const { user } = useSelector(state => state.auth);
+  const { items: allRecipes } = useSelector(state => state.recipes);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  const { listening, startListening: startVoiceSearch } = useVoiceSearch(async (text) => {
+    setSearchQuery(text);
+    if (allRecipes.length === 0) await dispatch(fetchRecipes());
+    dispatch(searchRecipes(text));
+    navigate('/search');
+  });
 
   const handleLogout = () => {
     dispatch(logout());
     navigate('/login');
   };
 
-  const handleSearch = (e) => {
+  const handleSearch = async (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
+      if (allRecipes.length === 0) await dispatch(fetchRecipes());
       dispatch(searchRecipes(searchQuery));
       navigate('/search');
     }
@@ -48,7 +58,7 @@ export default function UserHeader() {
           </Link>
 
           {/* Search - Hidden on mobile */}
-          <div className="hidden md:flex flex-1 max-w-md">
+          <div className="hidden md:flex flex-1 max-w-md items-center gap-2">
             <form onSubmit={handleSearch} className="relative w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
               <input
@@ -59,6 +69,13 @@ export default function UserHeader() {
                 className="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
             </form>
+            <button
+              onClick={startVoiceSearch}
+              aria-label="Voice search"
+              className={`p-2 rounded-full transition flex-shrink-0 ${listening ? 'bg-red-100 animate-pulse' : 'bg-gray-100 hover:bg-gray-200'}`}
+            >
+              {listening ? <MicOff size={18} className="text-red-500" /> : <Mic size={18} className="text-gray-600" />}
+            </button>
           </div>
 
           {/* Desktop Actions */}
@@ -67,9 +84,9 @@ export default function UserHeader() {
               <div className="bg-orange-100 p-2 rounded-full hover:bg-orange-200 transition">
                 <ShoppingCart size={20} className="text-orange-600" />
               </div>
-              {items.length > 0 && (
+              {cartItems.length > 0 && (
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
-                  {items.length}
+                  {cartItems.length}
                 </span>
               )}
             </Link>
@@ -93,6 +110,8 @@ export default function UserHeader() {
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="md:hidden p-2 rounded-lg hover:bg-gray-100"
+            aria-label="Toggle menu"
+            aria-expanded={mobileMenuOpen}
           >
             <Menu size={24} />
           </button>
@@ -101,20 +120,29 @@ export default function UserHeader() {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden mt-4 pb-4 space-y-3 border-t pt-4">
-            <form onSubmit={handleSearch} className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-              <input
-                type="text"
-                placeholder="Search food..."
-                value={searchQuery}
-                onChange={(e) => handleSearchChange(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-              />
-            </form>
+            <div className="flex items-center gap-2">
+              <form onSubmit={handleSearch} className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                <input
+                  type="text"
+                  placeholder="Search food..."
+                  value={searchQuery}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                />
+              </form>
+              <button
+                onClick={startVoiceSearch}
+                aria-label="Voice search"
+                className={`p-2 rounded-full transition flex-shrink-0 ${listening ? 'bg-red-100 animate-pulse' : 'bg-gray-100 hover:bg-gray-200'}`}
+              >
+                {listening ? <MicOff size={18} className="text-red-500" /> : <Mic size={18} className="text-gray-600" />}
+              </button>
+            </div>
             <Link to="/cart" className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <span className="font-medium">Cart</span>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">{items.length} items</span>
+                <span className="text-sm text-gray-600">{cartItems.length} items</span>
                 <ShoppingCart size={20} className="text-orange-600" />
               </div>
             </Link>

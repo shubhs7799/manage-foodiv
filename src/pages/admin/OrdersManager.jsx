@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchOrders, updateOrderStatus } from '../../redux/slices/ordersSlice';
 import toast from 'react-hot-toast';
+import { STATUS_COLORS, ORDER_STATUSES } from '../../constants';
+import { formatDate } from '../../utils';
 
 export default function OrdersManager() {
   const dispatch = useDispatch();
@@ -16,22 +18,11 @@ export default function OrdersManager() {
       await dispatch(updateOrderStatus({ id: orderId, status: newStatus })).unwrap();
       toast.success('Order status updated!');
     } catch (err) {
-      toast.error('Update failed');
+      toast.error(err?.message || 'Update failed');
     }
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Delivered': return 'bg-green-500';
-      case 'Cancelled': return 'bg-red-500';
-      default: return 'bg-gray-500';
-    }
-  };
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
-  };
+  const getStatusColor = (status) => STATUS_COLORS[status] || 'bg-gray-500';
 
   return (
     <div className="p-6">
@@ -59,11 +50,9 @@ export default function OrdersManager() {
                     onChange={(e) => handleStatusChange(order.id, e.target.value)}
                     className="border rounded px-2 py-1 text-sm"
                   >
-                    <option value="Pending">Pending</option>
-                    <option value="Preparing">Preparing</option>
-                    <option value="Out for Delivery">Out for Delivery</option>
-                    <option value="Delivered">Delivered</option>
-                    <option value="Cancelled">Cancelled</option>
+                    {ORDER_STATUSES.map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
                   </select>
                 </div>
               </div>

@@ -4,17 +4,8 @@ import { fetchUserOrders } from '../redux/slices/ordersSlice';
 import { Package } from 'lucide-react';
 import Loader from '../components/common/Loader';
 import EmptyState from '../components/common/EmptyState';
-
-const STATUS_COLORS = {
-  Delivered: 'bg-green-500',
-  Cancelled: 'bg-red-500',
-  'Out for Delivery': 'bg-blue-500',
-  Preparing: 'bg-yellow-500',
-  Pending: 'bg-gray-500'
-};
-
-const formatDate = (dateString) =>
-  new Date(dateString).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+import { STATUS_COLORS } from '../constants';
+import { formatDate } from '../utils';
 
 export default function OrderHistoryPage() {
   const dispatch = useDispatch();

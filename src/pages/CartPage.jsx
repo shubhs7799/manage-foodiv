@@ -3,6 +3,8 @@ import { removeFromCart, updateQuantity } from '../redux/slices/cartSlice';
 import { useNavigate } from 'react-router-dom';
 import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
 import EmptyState from '../components/common/EmptyState';
+import Recommendations from '../components/common/Recommendations';
+import { DELIVERY_FEE } from '../constants';
 
 export default function CartPage() {
   const dispatch = useDispatch();
@@ -39,17 +41,29 @@ export default function CartPage() {
                 <h3 className="font-semibold text-sm sm:text-base truncate">{item.name}</h3>
                 <p className="text-gray-600 text-sm">₹{item.price}</p>
                 <div className="flex items-center gap-2 mt-2">
-                  <button onClick={() => dispatch(updateQuantity({ id: item.id, quantity: item.quantity - 1 }))} className="bg-gray-200 p-1 rounded hover:bg-gray-300">
+                  <button
+                    onClick={() => dispatch(updateQuantity({ id: item.id, quantity: item.quantity - 1 }))}
+                    aria-label={`Decrease quantity of ${item.name}`}
+                    className="bg-gray-200 p-1 rounded hover:bg-gray-300"
+                  >
                     <Minus size={16} />
                   </button>
                   <span className="px-3 font-semibold text-sm">{item.quantity}</span>
-                  <button onClick={() => dispatch(updateQuantity({ id: item.id, quantity: item.quantity + 1 }))} className="bg-gray-200 p-1 rounded hover:bg-gray-300">
+                  <button
+                    onClick={() => dispatch(updateQuantity({ id: item.id, quantity: item.quantity + 1 }))}
+                    aria-label={`Increase quantity of ${item.name}`}
+                    className="bg-gray-200 p-1 rounded hover:bg-gray-300"
+                  >
                     <Plus size={16} />
                   </button>
                 </div>
               </div>
               <div className="flex flex-col items-end justify-between">
-                <button onClick={() => dispatch(removeFromCart(item.id))} className="text-red-600 hover:text-red-700">
+                <button
+                  onClick={() => dispatch(removeFromCart(item.id))}
+                  aria-label={`Remove ${item.name} from cart`}
+                  className="text-red-600 hover:text-red-700"
+                >
                   <Trash2 size={18} />
                 </button>
                 <div className="text-base sm:text-lg font-semibold">₹{(item.price * item.quantity).toFixed(2)}</div>
@@ -62,10 +76,10 @@ export default function CartPage() {
           <h2 className="text-lg sm:text-xl font-semibold mb-4">Order Summary</h2>
           <div className="space-y-2 mb-4 text-sm sm:text-base">
             <div className="flex justify-between"><span>Subtotal:</span><span>₹{total.toFixed(2)}</span></div>
-            <div className="flex justify-between"><span>Delivery:</span><span>₹40.00</span></div>
+            <div className="flex justify-between"><span>Delivery:</span><span>₹{DELIVERY_FEE.toFixed(2)}</span></div>
             <div className="border-t pt-2 flex justify-between text-lg sm:text-xl font-bold">
               <span>Total:</span>
-              <span className="text-green-600">₹{(total + 40).toFixed(2)}</span>
+              <span className="text-green-600">₹{(total + DELIVERY_FEE).toFixed(2)}</span>
             </div>
           </div>
           <button
@@ -76,6 +90,8 @@ export default function CartPage() {
           </button>
         </div>
       </div>
+
+      <Recommendations recipeIds={items.map(i => i.id)} />
     </>
   );
 }

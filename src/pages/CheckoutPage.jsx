@@ -6,13 +6,13 @@ import { clearCart } from '../redux/slices/cartSlice';
 import toast from 'react-hot-toast';
 import EmptyState from '../components/common/EmptyState';
 import { ShoppingBag } from 'lucide-react';
+import { DELIVERY_FEE } from '../constants';
 
 export default function CheckoutPage() {
   const { items, total } = useSelector(state => state.cart);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
-
   const [address, setAddress] = useState({ street: '', city: '', state: '', zip: '', phone: '' });
 
   const handleChange = (field) => (e) => setAddress(prev => ({ ...prev, [field]: e.target.value }));
@@ -23,7 +23,6 @@ export default function CheckoutPage() {
     try {
       await dispatch(createOrder({
         items: items.map(item => ({ recipeId: item.id, name: item.name, price: item.price, quantity: item.quantity })),
-        totalAmount: total,
         deliveryAddress: address
       })).unwrap();
       dispatch(clearCart());
@@ -51,27 +50,27 @@ export default function CheckoutPage() {
           <h2 className="text-xl font-semibold mb-4">Delivery Address</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-gray-700 text-sm mb-1">Street Address</label>
-              <input type="text" value={address.street} onChange={handleChange('street')} className={inputClass} required />
+              <label htmlFor="street" className="block text-gray-700 text-sm mb-1">Street Address</label>
+              <input id="street" type="text" value={address.street} onChange={handleChange('street')} className={inputClass} required />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-gray-700 text-sm mb-1">City</label>
-                <input type="text" value={address.city} onChange={handleChange('city')} className={inputClass} required />
+                <label htmlFor="city" className="block text-gray-700 text-sm mb-1">City</label>
+                <input id="city" type="text" value={address.city} onChange={handleChange('city')} className={inputClass} required />
               </div>
               <div>
-                <label className="block text-gray-700 text-sm mb-1">State</label>
-                <input type="text" value={address.state} onChange={handleChange('state')} className={inputClass} required />
+                <label htmlFor="state" className="block text-gray-700 text-sm mb-1">State</label>
+                <input id="state" type="text" value={address.state} onChange={handleChange('state')} className={inputClass} required />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-gray-700 text-sm mb-1">Zip Code</label>
-                <input type="text" value={address.zip} onChange={handleChange('zip')} className={inputClass} required />
+                <label htmlFor="zip" className="block text-gray-700 text-sm mb-1">Zip Code</label>
+                <input id="zip" type="text" value={address.zip} onChange={handleChange('zip')} className={inputClass} required pattern="[0-9]{5,6}" title="Enter a valid zip code" />
               </div>
               <div>
-                <label className="block text-gray-700 text-sm mb-1">Phone</label>
-                <input type="tel" value={address.phone} onChange={handleChange('phone')} className={inputClass} required />
+                <label htmlFor="phone" className="block text-gray-700 text-sm mb-1">Phone</label>
+                <input id="phone" type="tel" value={address.phone} onChange={handleChange('phone')} className={inputClass} required pattern="[0-9]{10}" title="Enter a 10-digit phone number" />
               </div>
             </div>
             <button
@@ -94,9 +93,13 @@ export default function CheckoutPage() {
               </div>
             ))}
           </div>
-          <div className="border-t pt-4 flex justify-between text-xl font-bold">
-            <span>Total:</span>
-            <span className="text-green-600">₹{total.toFixed(2)}</span>
+          <div className="border-t pt-3 space-y-2 text-sm">
+            <div className="flex justify-between"><span>Subtotal:</span><span>₹{total.toFixed(2)}</span></div>
+            <div className="flex justify-between"><span>Delivery:</span><span>₹{DELIVERY_FEE.toFixed(2)}</span></div>
+            <div className="border-t pt-2 flex justify-between text-xl font-bold">
+              <span>Total:</span>
+              <span className="text-green-600">₹{(total + DELIVERY_FEE).toFixed(2)}</span>
+            </div>
           </div>
         </div>
       </div>
